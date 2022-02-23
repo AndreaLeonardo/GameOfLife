@@ -234,7 +234,7 @@ class MainWindow(qtw.QMainWindow):
         self.mapWindow = MapWindow(self)
         self.generation = 0
 
-        self.setFixedSize(qtc.QSize(self.wDim - 3, self.wDim + 36))
+        self.setFixedSize(qtc.QSize(self.wDim - 3, self.wDim + 50))
         self.gridDim = 50
         self.gridDimY = 64
         self.layout = qtw.QVBoxLayout()
@@ -261,28 +261,25 @@ class MainWindow(qtw.QMainWindow):
 
         self.infoGLabel = qtw.QLabel()
         self.infoGLabel.setVisible(False)
-        self.infoGLabel.setFixedHeight(10)
 
-        self.version = Toggle()
-        self.version.setFixedWidth(70)
-        self.version.setFixedHeight(30)
-        self.version.clicked.connect(self.changeVersion)
-        self.vLabel = qtw.QLabel("LIGHT")
-        self.vLabel.setFixedWidth(70)
-        self.vLayout = qtw.QHBoxLayout()
-        self.vLayout.addWidget(self.version)
-        self.vLayout.addWidget(self.vLabel)
+        self.mode = qtw.QPushButton()
+        self.mode.setFixedWidth(120)
+        self.mode.setFixedHeight(30)
+        self.modeMenu = qtw.QMenu()
+        self.modeMenu.addAction("Normal", self.setMode)
+        self.modeMenu.addAction("HighLife", self.setMode)
+        self.modeMenu.addAction("Day-Night", self.setMode)
+        self.mode.setText("Normal")
+        self.mode.setMenu(self.modeMenu)
 
         self.infoLayout.addWidget(self.infoBLabel)
         self.infoLayout.addWidget(self.infoDLabel)
         self.infoLayout.addWidget(self.infoGLabel)
+        self.infoLayout.addWidget(self.mode)
 
         self.button = qtw.QPushButton("Start!")
         self.button.setCheckable(True)
         self.button.clicked.connect(self.start)
-
-        # self.button.setStyleSheet("background-color: #2B5DD1; color: #FFFFFF; border-style: outset; padding: 2px; "
-        # "font: bold 20px; border-width: 6px; border-radius: 10px; border-color: #2752B8;")
 
         self.refreshButton = qtw.QPushButton("Refresh")
         self.refreshButton.clicked.connect(self.refresh)
@@ -318,7 +315,7 @@ class MainWindow(qtw.QMainWindow):
         self.zoomLayout.setAlignment(qtc.Qt.AlignVCenter)
 
         self.slider = qtw.QSlider()
-        self.slider.setFixedHeight(int(self.wDim / 4) - 67)
+        self.slider.setFixedHeight(int(self.wDim / 4) - 100)
         self.slider.setFixedWidth(50)
         self.slider.valueChanged.connect(self.speed)
 
@@ -335,6 +332,18 @@ class MainWindow(qtw.QMainWindow):
         self.frameRateLayout.addWidget(self.frTopLabel)
         self.frameRateLayout.addWidget(self.slider)
         self.frameRateLayout.addWidget(self.frLabel)
+
+        self.version = Toggle()
+        self.version.setFixedWidth(70)
+        self.version.setFixedHeight(30)
+        self.version.clicked.connect(self.changeVersion)
+        self.vLabel = qtw.QLabel("LIGHT")
+        self.vLabel.setFixedWidth(70)
+        self.vLayout = qtw.QHBoxLayout()
+        self.vLayout.addWidget(self.version)
+        self.vLayout.addWidget(self.vLabel)
+
+        self.layout.setSpacing(7)
 
         self.option1 = qtw.QCheckBox("Oldness")
         self.option2 = qtw.QCheckBox("PacMan Effect")
@@ -391,6 +400,9 @@ class MainWindow(qtw.QMainWindow):
 
         self.setCentralWidget(container)
 
+    def setMode(self):
+        self.mode.setText(self.sender().text())
+
     def updateColors(self):
         for i in range(self.gridDim):
             for j in range(self.gridDimY):
@@ -444,14 +456,14 @@ class MainWindow(qtw.QMainWindow):
             self.infoDLabel.setVisible(True)
             self.infoGLabel.setText("Generations: " + str(self.generation))
             self.infoGLabel.setVisible(True)
-            self.dial.setFixedHeight(self.dial.height() - 18)
-            self.slider.setFixedHeight(self.slider.height() - 18)
+            # self.dial.setFixedHeight(self.dial.height() - 18)
+            # self.slider.setFixedHeight(self.slider.height() - 18)
         else:
             self.infoBLabel.setVisible(False)
             self.infoDLabel.setVisible(False)
             self.infoGLabel.setVisible(False)
-            self.dial.setFixedHeight(self.dial.height() + 18)
-            self.slider.setFixedHeight(self.slider.height() + 18)
+            # self.dial.setFixedHeight(self.dial.height() + 18)
+            # self.slider.setFixedHeight(self.slider.height() + 18)
 
     def refresh(self):
         if not self.button.isChecked():
@@ -572,23 +584,24 @@ class MainWindow(qtw.QMainWindow):
         else:
             s = signal.convolve2d(matrix, [[1, 1, 1], [1, 0, 1], [1, 1, 1]], mode='same', boundary='wrap')
 
-        s[s > 3] = 0
-        s[s < 2] = 0
-        r = s+matrix
-        r[r < 3] = 0
+        if self.mode.text() == "Normal":
+            s[s > 3] = 0
+            s[s < 2] = 0
+            r = s+matrix
+            r[r < 3] = 0
 
-        for i in range(self.gridDim):
-            for j in range(self.gridDimY):
-                if r[i][j]:
-                    if not matrix[i][j]:
-                        self.births += 1
-                    self.layout4.itemAt(i, j).graphicsItem().grow()
-                    self.layout4.itemAt(i, j).graphicsItem().updateColor()
-                else:
-                    if matrix[i][j]:
-                        self.deaths += 1
-                        self.layout4.itemAt(i, j).graphicsItem().die()
+            for i in range(self.gridDim):
+                for j in range(self.gridDimY):
+                    if r[i][j]:
+                        if not matrix[i][j]:
+                            self.births += 1
+                        self.layout4.itemAt(i, j).graphicsItem().grow()
                         self.layout4.itemAt(i, j).graphicsItem().updateColor()
+                    else:
+                        if matrix[i][j]:
+                            self.deaths += 1
+                            self.layout4.itemAt(i, j).graphicsItem().die()
+                            self.layout4.itemAt(i, j).graphicsItem().updateColor()
 
         '''for i in range(self.gridDim):
             for j in range(self.gridDimY):
