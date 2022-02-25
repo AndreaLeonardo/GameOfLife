@@ -269,6 +269,7 @@ class MainWindow(qtw.QMainWindow):
         self.modeMenu.addAction("Normal", self.setMode)
         self.modeMenu.addAction("HighLife", self.setMode)
         self.modeMenu.addAction("Day-Night", self.setMode)
+        self.modeMenu.addAction("Bosco", self.setMode)
         self.mode.setText("Normal")
         self.mode.setMenu(self.modeMenu)
 
@@ -470,7 +471,7 @@ class MainWindow(qtw.QMainWindow):
             for i in range(self.gridDim):
                 for j in range(self.gridDimY):
                     self.layout4.itemAt(i, j).graphicsItem().setAge(
-                        1 if random.randint(0, 100) < 20 else 0)
+                        1 if random.randint(0, 100) < 30 else 0)
                     self.layout4.itemAt(i, j).graphicsItem().updateStatus()
                     self.layout4.itemAt(i, j).graphicsItem().updateColor()
 
@@ -481,114 +482,35 @@ class MainWindow(qtw.QMainWindow):
             self.infoDLabel.setText("Deaths: " + str(self.deaths))
             self.infoGLabel.setText("Generations: " + str(self.generation))
 
-    def countNeighbors(self, k, q, i, j):
-        if [k, q] != [i, j]:
-            return 1 if self.layout4.itemAt(k, q).graphicsItem().palette().color(
-                qtg.QPalette.Background) != qtg.QColor(
-                AgeColor[0]) else 0
-        else:
-            return 0
-
-    def countNeighbors_Update(self, i, j):
-        count = 0
-
-        startK = i - 1 if i - 1 >= 0 else i
-        endK = i + 2 if i + 1 < self.gridDim else self.gridDim - 1
-        startQ = j - 1 if j - 1 >= 0 else j
-        endQ = j + 2 if j + 1 < self.gridDimY else int(self.gridDimY - 1)
-
-        for k in range(startK, endK):
-            for q in range(startQ, endQ):
-                if [k, q] != [i, j]:
-                    count += 1 if self.layout4.itemAt(k, q).graphicsItem().palette().color(
-                        qtg.QPalette.Background) != qtg.QColor(
-                        AgeColor[0]) else 0
-
-        if count == 3 or (count == 2 and self.layout4.itemAt(i, j).graphicsItem().palette().color(
-                qtg.QPalette.Background) != qtg.QColor(AgeColor[0])):
-            if count == 3 and self.layout4.itemAt(i, j).graphicsItem().getAge() == 0:
-                self.births += 1
-            self.layout4.itemAt(i, j).graphicsItem().grow()
-        if count > 3 or count < 2:
-            if self.layout4.itemAt(i, j).graphicsItem().getAge() != 0:
-                self.deaths += 1
-            self.layout4.itemAt(i, j).graphicsItem().die()
-        if self.layout4.itemAt(i, j).graphicsItem().getAge() > 12 and self.option1.isChecked():
-            self.deaths += 1
-            self.layout4.itemAt(i, j).graphicsItem().die()
-
-    def countNeighborsRow_Update(self, i):
-        for j in range(self.gridDimY):
-            self.countNeighbors_Update(i, j)
-
-    def countNeighborsColumn_Update(self, j):
-        for i in range(self.gridDim):
-            self.countNeighbors_Update(i, j)
-
-    def countPacManNeighbors_Update(self, i, j):
-        count = 0
-        for k in range(i - 1, i + 2):
-            for q in range(j - 1, j + 2):
-                if [k, q] != [i, j]:
-                    k = 0 if k >= self.gridDim else k
-                    k = self.gridDim - 1 if k < 0 else k
-                    q = 0 if q >= self.gridDimY else q
-                    q = self.gridDimY - 1 if q < 0 else q
-                    count = (count + 1) if self.layout4.itemAt(k, q).graphicsItem().palette().color(
-                        qtg.QPalette.Background) != qtg.QColor(
-                        AgeColor[0]) else count
-        if count == 3 or (count == 2 and self.layout4.itemAt(i, j).graphicsItem().palette().color(
-                qtg.QPalette.Background) != qtg.QColor(AgeColor[0])):
-            if count == 3 and self.layout4.itemAt(i, j).graphicsItem().getAge() == 0:
-                self.births += 1
-            self.layout4.itemAt(i, j).graphicsItem().grow()
-        if count > 3 or count < 2:
-            if self.layout4.itemAt(i, j).graphicsItem().getAge() != 0:
-                self.deaths += 1
-            self.layout4.itemAt(i, j).graphicsItem().die()
-        if self.layout4.itemAt(i, j).graphicsItem().getAge() > 12 and self.option1.isChecked():
-            self.deaths += 1
-            self.layout4.itemAt(i, j).graphicsItem().die()
-
-    def updateColumnColors(self, j):
-        for i in range(self.gridDim):
-            self.layout4.itemAt(i, j).graphicsItem().updateColor()
-
     def playGame(self):
-        '''if not self.option2.isChecked():
-            for i in range(self.gridDim):
-                for j in range(self.gridDimY):
-                    self.countNeighbors_Update(i, j)
-
-
-        else:
-            for i in range(self.gridDim):
-                for j in range(self.gridDimY):
-                    self.countPacManNeighbors_Update(i, j)
-
-        self.infoBLabel.setText("Births: " + str(self.births))
-        self.infoDLabel.setText("Deaths: " + str(self.deaths))
-
-        with parallel_backend("threading"):
-            Parallel()(delayed(self.updateColumnColors)(j)
-                       for j in range(self.gridDimY))
-
-        for i in range(self.gridDim):
-            for j in range(self.gridDimY):
-                self.layout4.itemAt(i, j).graphicsItem().updateColor()'''
 
         matrix = [[1 if self.layout4.itemAt(i, j).graphicsItem().getAge() > 0 else 0 for j in range(self.gridDimY)] for i in
                   range(self.gridDim)]
-        if not self.option2.isChecked():
-            s = signal.convolve2d(matrix, [[1, 1, 1], [1, 0, 1], [1, 1, 1]], mode='same', boundary='fill', fillvalue=0)
-        else:
-            s = signal.convolve2d(matrix, [[1, 1, 1], [1, 0, 1], [1, 1, 1]], mode='same', boundary='wrap')
 
-        if self.mode.text() == "Normal":
-            s[s > 3] = 0
-            s[s < 2] = 0
-            r = s+matrix
-            r[r < 3] = 0
+        if self.mode.text() != "Bosco":
+            if not self.option2.isChecked():
+                s = signal.convolve2d(matrix, [[1, 1, 1], [1, 0, 1], [1, 1, 1]], mode='same', boundary='fill', fillvalue=0)
+            else:
+                s = signal.convolve2d(matrix, [[1, 1, 1], [1, 0, 1], [1, 1, 1]], mode='same', boundary='wrap')
+
+            if self.mode.text() == "Normal":
+                s[s > 3] = 0
+                r = s+matrix
+                r[r < 3] = 0
+
+            elif self.mode.text() == "HighLife":
+                s[s > 6] = 0
+                s[s == 4] = 0
+                s[s == 5] = 0
+                r = s + matrix
+                r[r < 3] = 0
+                r[r > 6] = 0
+
+            elif self.mode.text() == "Day-Night":
+                s[s == 5] = 0
+                s[s == 3] = 7
+                r = s + matrix
+                r[r < 5] = 0
 
             for i in range(self.gridDim):
                 for j in range(self.gridDimY):
@@ -603,22 +525,34 @@ class MainWindow(qtw.QMainWindow):
                             self.layout4.itemAt(i, j).graphicsItem().die()
                             self.layout4.itemAt(i, j).graphicsItem().updateColor()
 
-        '''for i in range(self.gridDim):
-            for j in range(self.gridDimY):
-                if s[i][j] == 3:
-                    if not self.layout4.itemAt(i, j).graphicsItem().getAge():
-                        self.births += 1
-                    self.layout4.itemAt(i, j).graphicsItem().grow()
-                elif s[i][j] == 2 and self.layout4.itemAt(i, j).graphicsItem().getAge():
-                    self.layout4.itemAt(i, j).graphicsItem().grow()
-                else:
-                    if self.layout4.itemAt(i, j).graphicsItem().getAge():
-                        self.deaths += 1
-                    self.layout4.itemAt(i, j).graphicsItem().die()
-                if self.layout4.itemAt(i, j).graphicsItem().getAge() > 12 and self.option1.isChecked():
-                    self.deaths += 1
-                    self.layout4.itemAt(i, j).graphicsItem().die()
-                self.layout4.itemAt(i, j).graphicsItem().updateColor()'''
+        else:
+            convM = np.ones((11, 11))
+            convM[6][6] = 0
+            if not self.option2.isChecked():
+                s = signal.convolve2d(matrix, convM, mode='same', boundary='fill', fillvalue=0)
+            else:
+                s = signal.convolve2d(matrix, convM, mode='same', boundary='wrap')
+
+            s[s < 33] = 0
+            s[s > 57] = 0
+            r = s+matrix
+
+            for i in range(self.gridDim):
+                for j in range(self.gridDimY):
+                    if r[i][j] in range(34, 47):
+                        if not matrix[i][j]:
+                            self.births += 1
+                        self.layout4.itemAt(i, j).graphicsItem().grow()
+                        self.layout4.itemAt(i, j).graphicsItem().updateColor()
+                    elif r[i][j] in range(47, 59):
+                        if matrix[i][j]:
+                            self.layout4.itemAt(i, j).graphicsItem().grow()
+                            self.layout4.itemAt(i, j).graphicsItem().updateColor()
+                    else:
+                        if matrix[i][j]:
+                            self.deaths += 1
+                            self.layout4.itemAt(i, j).graphicsItem().die()
+                            self.layout4.itemAt(i, j).graphicsItem().updateColor()
 
     def empty(self):
         if not self.button.isChecked():
@@ -627,6 +561,7 @@ class MainWindow(qtw.QMainWindow):
                     self.layout4.itemAt(i, j).graphicsItem().setAge(0)
                     self.layout4.itemAt(i, j).graphicsItem().updateStatus()
                     self.layout4.itemAt(i, j).graphicsItem().updateColor()
+
             self.births = 0
             self.deaths = 0
             self.generation = 0
@@ -649,9 +584,6 @@ class MainWindow(qtw.QMainWindow):
             print(end-start)
 
     def zoom(self):
-        '''if self.dial.value():
-            self.graphicsView.scale(1 + (self.dial.value()-self.dialFactor)*0.05, 1 + (self.dial.value()-self.dialFactor)*0.05)
-            self.dialFactor = self.dial.value()'''
         self.graphicsView.resetTransform()
         self.graphicsView.scale(0.2 + (self.dial.value()) * 0.04,
                                 0.2 + (self.dial.value()) * 0.04)
