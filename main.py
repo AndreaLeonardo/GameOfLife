@@ -65,7 +65,8 @@ class SimpleColor(qtw.QWidget):
     def getAge(self):
         return self.age
 
-
+# This class represents the "Model" of a Game of Life's cell.
+# Many of these objects can be displayed in a grid to be used for a Game of Life's simulation.
 class Color(qtw.QGraphicsWidget):
 
     def __init__(self, a, button, color):
@@ -217,7 +218,11 @@ class MapWindow(qtw.QMainWindow):
         grid.setSpacing(2)
         self.hboxes[k].addLayout(grid)
 
-
+# This is the main class of the program: All layout are initialized in the constructor
+# and they displayed through PyQt5 methods of the GameView.
+# The variable "layout2" represents the control panel, where all the button of the "Controller"
+# are displayed. Their associated methods let the program change the interface according to the
+# role of the button/dial/switch/slider activated.
 class MainWindow(qtw.QMainWindow):
     def __init__(self):
         super().__init__()
