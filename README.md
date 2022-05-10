@@ -33,5 +33,7 @@ Below the table we have the control panel where you can:
 - switch from dark to light version or vice versa
 - activate secondary options such as: display the color of living cells (depending on age),
   allow the cells at the edges to consider the cells on the opposite side as neighbors, or display the simulation info (births, deaths and generations)
+  
+It is also possible to draw inside the table, ie when the game is stopped (empty table or paused game) the user can populate or empty a cell by double clicking the left mouse button.
 
 
