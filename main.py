@@ -4,7 +4,6 @@ import os
 import typing
 import numpy as np
 import shutil
-from joblib import Parallel, delayed, parallel_backend
 from scipy import signal
 import time
 import math
@@ -16,8 +15,6 @@ import PyQt5.QtGui as qtg
 import PyQt5.QtTest as qtt
 from qtwidgets import Toggle
 
-
-# pool = mp.Pool()
 
 AgeColor = {
     0: "White",
@@ -346,12 +343,12 @@ class MainWindow(qtw.QMainWindow):
 
         self.layout.setSpacing(7)
 
-        self.option1 = qtw.QCheckBox("Oldness")
+        #self.option1 = qtw.QCheckBox("Oldness")
         self.option2 = qtw.QCheckBox("PacMan Effect")
         self.option3 = qtw.QCheckBox("Info")
         self.optionC = qtw.QCheckBox("Colors")
         self.optionsLayout.addWidget(self.optionC)
-        self.optionsLayout.addWidget(self.option1)
+        #self.optionsLayout.addWidget(self.option1)
         self.optionsLayout.addWidget(self.option2)
         self.optionsLayout.addWidget(self.option3)
         self.optionsLayout.addLayout(self.vLayout)
@@ -417,37 +414,39 @@ class MainWindow(qtw.QMainWindow):
         self.vLabel.setText("DARK" if self.version.isChecked() else "LIGHT")
 
     def searchMap(self):
-        self.mapWindow.show()
+        if not self.button.isChecked():
+            self.mapWindow.show()
 
     def loadMap(self):
 
-        fileName, _ = qtw.QFileDialog.getOpenFileName(self, 'Single File', qtc.QDir.rootPath(), '*.txt')
-        try:
+        if not self.button.isChecked():
+            fileName, _ = qtw.QFileDialog.getOpenFileName(self, 'Single File', qtc.QDir.rootPath(), '*.txt')
             try:
-                shutil.copy2(fileName, "Maps/")
-            except shutil.SameFileError:
-                pass
-            with open(fileName) as f:
-                # d = json.load(f)
-                d = f.readlines()
-                data = np.array(toList(d))
-                print(data)
-        except FileNotFoundError:
-            return
+                try:
+                    shutil.copy2(fileName, "Maps/")
+                except shutil.SameFileError:
+                    pass
+                with open(fileName) as f:
+                    # d = json.load(f)
+                    d = f.readlines()
+                    data = np.array(toList(d))
+                    print(data)
+            except FileNotFoundError:
+                return
 
-        self.empty()
+            self.empty()
 
-        r_start = int(self.gridDim / 2 - data.shape[0] / 2)
-        c_start = int(self.gridDimY / 2 - data.shape[1] / 2)
-        for i in range(data.shape[0]):
-            for j in range(data.shape[1]):
-                self.layout4.itemAt(i + r_start, j + c_start).graphicsItem().setAge(1 if data[i][j] else 0)
-                self.layout4.itemAt(i + r_start, j + c_start).graphicsItem().updateStatus()
-                self.layout4.itemAt(i + r_start, j + c_start).graphicsItem().updateColor()
+            r_start = int(self.gridDim / 2 - data.shape[0] / 2)
+            c_start = int(self.gridDimY / 2 - data.shape[1] / 2)
+            for i in range(data.shape[0]):
+                for j in range(data.shape[1]):
+                    self.layout4.itemAt(i + r_start, j + c_start).graphicsItem().setAge(1 if data[i][j] else 0)
+                    self.layout4.itemAt(i + r_start, j + c_start).graphicsItem().updateStatus()
+                    self.layout4.itemAt(i + r_start, j + c_start).graphicsItem().updateColor()
 
-        mapsNum = len(
-            [name for name in os.listdir(self.mapWindow.DIR) if os.path.isfile(os.path.join(self.mapWindow.DIR, name))])
-        self.mapWindow.addMap(fileName, mapsNum - 1)
+            mapsNum = len(
+                [name for name in os.listdir(self.mapWindow.DIR) if os.path.isfile(os.path.join(self.mapWindow.DIR, name))])
+            self.mapWindow.addMap(fileName, mapsNum - 1)
 
     def showInfo(self):
         if self.option3.isChecked():
