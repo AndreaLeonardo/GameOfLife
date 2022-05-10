@@ -29,7 +29,7 @@ Below the table we have the control panel where you can:
 - load a pattern in .txt format with the button with the floppy disk (the pattern is saved and can be reused later)
 - use a previously saved pattern with the button with the magnifying glass
 - zoom with the dial
-- change the framerate with the glider
+- change the framerate with the slider
 - switch from dark to light version or vice versa
 - activate secondary options such as: display the color of living cells (depending on age),
   allow the cells at the edges to consider the cells on the opposite side as neighbors, or display the simulation info (births, deaths and generations)
